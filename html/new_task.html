@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Edit Ticket' if edit_mode else 'New Ticket' }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<style>
+    /* General Body Styles */
+    body {
+        min-height: 100vh;
+        background-color: #eef5f9;
+        background-image: linear-gradient(50deg, #5587baad, #677c966c);
+        font-family: 'Inter', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.7rem;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Main Container for the form */
+    .container {
+        width: 100%;
+        max-width: 1100px;
+        min-height: 85vh;
+        background-color: #ffffffcc;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.714);
+        animation: fadeIn 0.5s ease-out forwards;
+        padding: 10px 20px 15px 20px;
+        position: relative;
+    }
+
+    .top-right-btn {
+        position: absolute;
+        top: 30px;
+        right: 30px;
+        z-index: 2;
+    }
+
+    .form-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        margin-top: 0px;
+    }
+
+    /* Form Header */
+    header h1 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #e6e9ed;
+
+    }
+
+    /* Form Grid Layout */
+    .ticket-form {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+
+    /* Form Groups and Labels */
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+        /* Span across both columns */
+    }
+
+    .form-group label {
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    /* General Input and Select Styling */
+    input[type="text"],
+    input[type="number"],
+    input[type="file"],
+    select,
+    textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #dcdfe6;
+        border-radius: 6px;
+        font-size: 1rem;
+        background-color: #fff;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        box-sizing: border-box;
+        /* Important for consistent sizing */
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus,
+    textarea:focus {
+        outline: none;
+        border-color: #4a90e2;
+        box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+    }
+
+    input[readonly] {
+        background-color: #f8f9fa;
+        cursor: not-allowed;
+    }
+
+    /* Customer Input with Search Icon */
+    .input-with-icon {
+        position: relative;
+    }
+
+    .input-with-icon input {
+        padding-right: 2.5rem;
+        /* Make space for the icon */
+    }
+
+    .input-with-icon i {
+        position: absolute;
+        top: 50%;
+        right: 1rem;
+        transform: translateY(-50%);
+        color: #aaa;
+        cursor: pointer;
+    }
+
+    /* Radio Button Styling */
+    .radio-group {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        gap: 1rem;
+    }
+
+    .radio-group input[type="radio"] {
+        margin-right: 0.25rem;
+    }
+
+    .radio-group label {
+        margin-bottom: 0;
+        /* Override default label margin */
+        font-weight: normal;
+    }
+
+    /* File Input Styling */
+    .file-input {
+        font-size: 0.9rem;
+    }
+
+    .file-input::file-selector-button {
+        margin-right: 1rem;
+        border: 1px solid #dcdfe6;
+        background: #f8f9fa;
+        padding: 0.6rem 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .file-input::file-selector-button:hover {
+        background-color: #e9ecef;
+    }
+
+
+    /* Submit Button */
+    .submit-btn {
+        background-color: #ffffff;
+        color: rgb(0, 0, 0);
+        border: 1px solid #007bff;
+        box-shadow: #0069d9 0.1px 0.5px 0.1px 0.1px;
+        padding: 0.8rem 1.5rem;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+        width: auto;
+        /* Don't take full width */
+        justify-self: start;
+        /* Align button to the left */
+    }
+
+    .submit-btn:hover {
+        background-color: #0069d9;
+        color: #ffffff;
+    }
+
+    .submit-btn:active {
+        transform: scale(1.3);
+    }
+
+    /* Responsive Design for smaller screens */
+    @media (max-width: 992px) {
+        .ticket-form {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .ticket-form {
+            grid-template-columns: 1fr;
+            /* Stack fields in a single column */
+        }
+    }
+</style>
+
+<body>
+    {% include 'sidebar.html' %}
+    <div class="container">
+        <header>
+            <h1>{{ 'Edit Ticket' if edit_mode else 'New Ticket' }}</h1>
+        </header>
+        <form
+            action="{% if edit_mode %}{{ url_for('tickets.update_ticket', ticket_id=ticket.id) }}{% else %}{{ url_for('tickets.submit_ticket') }}{% endif %}"
+            method="POST" enctype="multipart/form-data" class="ticket-form">
+
+            <div class="form-group">
+                <label for="ticket_no">Ticket #</label>
+                <input type="text" id="ticket_no" name="ticket_no"
+                    value="{{ ticket.ticket_number if ticket else next_ticket_no }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="customer">Customer</label>
+                <select id="customer" name="customer" class="form-control">
+                    <option value="" disabled>Select Customer</option>
+                    {% for customer in customers %}
+                    <option value="{{ customer.id }}" {% if ticket and ticket.customer==customer.id|string %}selected{%
+                        endif %}>
+                        {{ customer.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="module">Module</label>
+                <select id="module" name="module">
+                    <option value="" disabled>Select</option>
+                    <option value="Billing" {% if ticket and ticket.module=='Billing' %}selected{% endif %}>Billing
+                    </option>
+                    <option value="Support" {% if ticket and ticket.module=='Support' %}selected{% endif %}>Support
+                    </option>
+                    <option value="Sales" {% if ticket and ticket.module=='Sales' %}selected{% endif %}>Sales</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    <option value="Open" {% if ticket and ticket.status=='Open' %}selected{% endif %}>Open</option>
+                    <option value="In_Progress" {% if ticket and ticket.status=='In_Progress' %}selected{% endif %}>In
+                        Progress</option>
+                    <option value="Confirmed" {% if ticket and ticket.status=='Confirmed' %}selected{% endif %}>
+                        Confirmed</option>
+                    <option value="Cancelled" {% if ticket and ticket.status=='Cancelled' %}selected{% endif %}>
+                        Cancelled</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="form_type">Form</label>
+                <select id="form_type" name="form_type">
+                    <option value="" disabled>Select</option>
+                    <option value="Incident" {% if ticket and ticket.form_type=='Incident' %}selected{% endif %}>
+                        Incident</option>
+                    <option value="Request" {% if ticket and ticket.form_type=='Request' %}selected{% endif %}>Request
+                    </option>
+                    <option value="Problem" {% if ticket and ticket.form_type=='Problem' %}selected{% endif %}>Problem
+                    </option>
+                    <option value="38" {% if ticket and ticket.form_type=='38' %}selected{% endif %}>Add-on Development
+                    </option>
+                    <option value="40" {% if ticket and ticket.form_type=='40' %}selected{% endif %}>Add-On: E-Invoice
+                        E-Way Bill</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Priority</label>
+                <div class="radio-group">
+                    <input type="radio" id="high" name="priority" value="High" {% if ticket and ticket.priority=='High'
+                        %}checked{% endif %}>
+                    <label for="high">High</label>
+                    <input type="radio" id="medium" name="priority" value="Medium" {% if (ticket and
+                        ticket.priority=='Medium' ) or not ticket %}checked{% endif %}>
+                    <label for="medium">Medium</label>
+                    <input type="radio" id="low" name="priority" value="Low" {% if ticket and ticket.priority=='Low'
+                        %}checked{% endif %}>
+                    <label for="low">Low</label>
+                </div>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="subject">Subject</label>
+                <input type="text" id="subject" name="subject" value="{{ ticket.subject if ticket else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="task_given_by">Task Given By</label>
+                <input type="text" id="task_given_by" name="task_given_by"
+                    value="{{ ticket.task_given_by if ticket else '' }}">
+            </div>
+            <div class="form-group">
+                <label for="attachment">Attachment</label>
+                <input type="file" id="attachment" name="attachment" class="file-input">
+                {% if ticket and ticket.attachment_path %}
+                <small class="mt-1">Current file: {{ ticket.attachment_path.split('/')[-1] }}</small>
+                {% endif %}
+            </div>
+
+            <div class="form-group ">
+                <label for="approved_hours">Approved Hours</label>
+                <input type="number" id="approved_hours" name="approved_hours" min="0.5" step="0.5"
+                    placeholder="Enter hours" value="{{ ticket.approved_hours if ticket else '0.5' }}"
+                    oninput="this.value = Math.max(0.5, this.value)">
+            </div>
+
+            <div class="form-group full-width">
+                <label for="description">Detail Description</label>
+                <textarea id="description" name="description" rows="6"
+                    oninput="count.innerText = this.value.length">{{ ticket.description if ticket else '' }}</textarea>
+                <div class="char-count">Characters: <span id="count">0</span></div>
+            </div>
+
+            <div class="form-group full-width">
+                <button type="submit" class="submit-btn">{{ 'Update Ticket' if edit_mode else 'Generate' }}</button>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>

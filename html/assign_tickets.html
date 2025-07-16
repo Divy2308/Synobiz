@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assign Tickets</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background: linear-gradient(5deg, #5587baad, #72809100) no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Inter', sans-serif;
+        }
+        .main-container {
+            width: 85%;
+            margin-left: auto;
+            margin-right: auto;
+            padding-top: 20px;
+        }
+        .card {
+            border: 0;
+            border-radius: 0.75rem;
+            box-shadow: 2px 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .table thead th {
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+        .btn-assign {
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+        .btn-assign:hover {
+            background-color: #0056b3;
+            color: white;
+        }
+        .alert-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            width: 300px;
+        }
+        .badge-open {
+            background-color: #007bff; /* Blue */
+        }
+        .badge-assigned {
+            background-color: #28a745; /* Green */
+        }
+        /* Custom styles for the toggle buttons */
+        .btn-group-toggle .btn {
+            border-radius: 0.5rem;
+            margin: 0 5px; /* Adjust spacing between buttons if needed */
+        }
+        .btn-group-toggle .btn.active {
+            background-color: #0d6efd; /* Deeper blue for active button */
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+
+    {% include 'sidebar.html' %}
+
+    <div class="alert-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="main-container">
+        <h2 class="mb-4 text-center">Ticket Assignment Dashboard</h2>
+
+        <div class="d-flex justify-content-center mb-4 btn-group-toggle">
+            <button id="showOpenTicketsBtn" class="btn btn-primary active">Show Open Tickets</button>
+            <button id="showAssignedTicketsBtn" class="btn btn-primary">Show Assigned Tickets</button>
+        </div>
+
+        <div class="card p-4" id="openTicketsCard"> {# This card is visible by default #}
+            <h4 class="mb-3">Open Tickets</h4>
+            {% if open_tickets %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="openTicketsTable">
+                    <thead>
+                        <tr>
+                            <th>Ticket No.</th>
+                            <th>Subject</th>
+                            <th>Customer</th>
+                            <th>Status</th>
+                            <th>Current Assignee</th>
+                            <th>Assign To</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="openTicketsTableBody">
+                        {% for ticket in open_tickets %}
+                        <tr id="ticket-row-{{ ticket.id }}">
+                            <td>{{ ticket.ticket_number }}</td>
+                            <td>{{ ticket.subject }}</td>
+                            <td>{{ ticket.customer }}</td>
+                            <td><span class="badge badge-open">{{ ticket.status }}</span></td>
+                            <td id="assignee-{{ ticket.id }}">{{ ticket.assigned_to_user_name if ticket.assigned_to_user_name else 'Unassigned' }}</td>
+                            <td>
+                                <select class="form-select form-select-sm assignee-select" data-ticket-id="{{ ticket.id }}" multiple="multiple" style="width: 180px;">
+                                    {% for assignee in assignees %}
+                                        <option value="{{ assignee.name }}">{{ assignee.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-assign assign-button" data-ticket-id="{{ ticket.id }}">Assign</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-center" id="noOpenTicketsMessage">No open tickets to display.</p>
+            {% endif %}
+        </div>
+
+        <div class="card p-4" id="assignedTicketsCard" style="display: none;"> {# This card is initially hidden #}
+            <h4 class="mb-3">Assigned Tickets</h4>
+            {% if assigned_tickets %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="assignedTicketsTable">
+                    <thead>
+                        <tr>
+                            <th>Ticket No.</th>
+                            <th>Subject</th>
+                            <th>Customer</th>
+                            <th>Status</th>
+                            <th>Assigned To</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assignedTicketsTableBody">
+                        {% for ticket in assigned_tickets %}
+                        <tr id="ticket-row-assigned-{{ ticket.id }}">
+                            <td>{{ ticket.ticket_number }}</td>
+                            <td>{{ ticket.subject }}</td>
+                            <td>{{ ticket.customer }}</td>
+                            <td><span class="badge badge-assigned">{{ ticket.status }}</span></td>
+                            <td>{{ ticket.assigned_to_user_name if ticket.assigned_to_user_name else 'Unassigned' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-center" id="noAssignedTicketsMessage">No assigned tickets to display.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const openTicketsTableBody = document.getElementById('openTicketsTableBody');
+            const assignedTicketsTableBody = document.getElementById('assignedTicketsTableBody');
+            const noOpenTicketsMessage = document.getElementById('noOpenTicketsMessage');
+            const noAssignedTicketsMessage = document.getElementById('noAssignedTicketsMessage');
+            
+            const openTicketsCard = document.getElementById('openTicketsCard');
+            const assignedTicketsCard = document.getElementById('assignedTicketsCard');
+            const showOpenTicketsBtn = document.getElementById('showOpenTicketsBtn');
+            const showAssignedTicketsBtn = document.getElementById('showAssignedTicketsBtn');
+
+            // Function to create a new row for the assigned tickets table
+            function createAssignedTicketRow(ticket) {
+                const row = document.createElement('tr');
+                row.id = `ticket-row-assigned-${ticket.id}`;
+                row.innerHTML = `
+                    <td>${ticket.ticket_number}</td>
+                    <td>${ticket.subject}</td>
+                    <td>${ticket.customer}</td>
+                    <td><span class="badge badge-assigned">${ticket.status}</span></td>
+                    <td>${ticket.assigned_to_user_name || 'Unassigned'}</td>
+                `;
+                return row;
+            }
+
+            // Function to show/hide cards
+            function showCard(cardToShow) {
+                if (cardToShow === 'open') {
+                    openTicketsCard.style.display = 'block';
+                    assignedTicketsCard.style.display = 'none';
+                    showOpenTicketsBtn.classList.add('active');
+                    showAssignedTicketsBtn.classList.remove('active');
+                } else if (cardToShow === 'assigned') {
+                    openTicketsCard.style.display = 'none';
+                    assignedTicketsCard.style.display = 'block';
+                    showOpenTicketsBtn.classList.remove('active');
+                    showAssignedTicketsBtn.classList.add('active');
+                }
+            }
+
+            // Event listeners for toggle buttons
+            showOpenTicketsBtn.addEventListener('click', function() {
+                showCard('open');
+            });
+
+            showAssignedTicketsBtn.addEventListener('click', function() {
+                showCard('assigned');
+            });
+
+            // Initialize Select2 for assignee selects
+            $('.assignee-select').select2({
+                placeholder: "Select assignee(s)",
+                allowClear: true,
+                closeOnSelect: false,
+                width: 'resolve'
+            });
+
+            // Event listener for all assign buttons
+            document.querySelectorAll('.assign-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const ticketId = this.dataset.ticketId;
+                    const selectElement = document.querySelector(`.assignee-select[data-ticket-id="${ticketId}"]`);
+                    const assigneeNames = $(selectElement).val(); // This will be an array
+                    const ticketRow = document.getElementById(`ticket-row-${ticketId}`); // Get the entire row
+
+                    if (!assigneeNames || assigneeNames.length === 0) {
+                        showFlashMessage('Please select at least one assignee.', 'warning');
+                        return;
+                    }
+
+                    // Disable button and select during processing
+                    this.disabled = true;
+                    selectElement.disabled = true;
+
+                    fetch('{{ url_for("tickets.perform_assignment") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            ticket_id: ticketId,
+                            assignee_names: assigneeNames // array of selected names
+                        })
+                    })
+                    .then(response => {
+                        console.log('Assignment response:', response);
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // 1. Remove from Open Tickets table
+                            ticketRow.remove();
+
+                            // 2. Add to Assigned Tickets table
+                            const newAssignedRow = createAssignedTicketRow(data.ticket);
+                            assignedTicketsTableBody.appendChild(newAssignedRow);
+
+                            // Update "No tickets" messages visibility
+                            updateTableMessages();
+
+                            showFlashMessage(data.message, 'success');
+                            
+                            // Automatically switch to "Assigned Tickets" view after assignment
+                            showCard('assigned');
+
+                        } else {
+                            showFlashMessage(data.message, 'danger');
+                        }
+                        // Re-enable elements regardless of success/failure
+                        this.disabled = false;
+                        selectElement.disabled = false;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        
+                        // Re-enable elements
+                        this.disabled = false;
+                        selectElement.disabled = false;
+                    });
+                });
+            });
+
+            // Function to show Bootstrap flash messages dynamically
+            function showFlashMessage(message, category) {
+                const alertContainer = document.querySelector('.alert-container');
+                const alertHtml = `
+                    <div class="alert alert-${category} alert-dismissible fade show" role="alert">
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                alertContainer.insertAdjacentHTML('beforeend', alertHtml);
+                // Automatically close after some time
+                setTimeout(() => {
+                    const latestAlert = alertContainer.lastElementChild;
+                    if (latestAlert) {
+                        new bootstrap.Alert(latestAlert).close();
+                    }
+                }, 5000); // Close after 5 seconds
+            }
+
+            // Function to update "No tickets" messages
+            function updateTableMessages() {
+                if (openTicketsTableBody.children.length === 0) {
+                    noOpenTicketsMessage.style.display = 'block';
+                } else {
+                    noOpenTicketsMessage.style.display = 'none';
+                }
+
+                if (assignedTicketsTableBody.children.length === 0) {
+                    noAssignedTicketsMessage.style.display = 'block';
+                } else {
+                    noAssignedTicketsMessage.style.display = 'none';
+                }
+            }
+
+            // Initial call to set correct message visibility on page load
+            // By default, show "Open Tickets" card
+            showCard('open'); 
+            updateTableMessages();
+        });
+    </script>
+</body>
+</html>

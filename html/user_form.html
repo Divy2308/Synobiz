@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Master</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            background-color: #eef5f9;
+            background-image: linear-gradient(50deg, #5587baad, #677c966c);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.7rem;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 1100px;
+            min-height: 85vh;
+            background-color: #ffffffcc;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.714);
+            animation: fadeIn 0.5s ease-out forwards;
+            padding: 20px 20px 15px 20px;
+            position: relative;
+        }
+
+        .top-right-btn {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            z-index: 2;
+        }
+
+        .form-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            margin-top: 0px;
+        }
+
+        /* Style for the logo next to the title */
+        .title-logo {
+            height: 80px;
+            /* Adjust height as needed */
+            background-color: #4c537f;
+            border-radius: 10px;
+            padding: 10px;
+
+        }
+
+        .title-logo:hover {
+            cursor: pointer;
+            transform: scale(1.07);
+            box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.581);
+            transition: transform 0.5s ease-out;
+        }
+
+        .form-title {
+            font-weight: 700;
+            color: #2c3e50;
+            margin-left: 260px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: .5rem;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+            padding: 10px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background-color: #ffffff;
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .form-control:hover,
+        .form-select:hover {
+            border-color: #a9b4be;
+            background-color: #f1f3f5;
+        }
+
+        .form-check-label {
+            padding-left: 5px;
+            transition: color 0.2s ease-in-out;
+        }
+
+        .form-check-label:hover {
+            color: #0056b3;
+            cursor: pointer;
+        }
+
+        .form-check-input:checked {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-submit {
+            background-color: #ffffffcc;
+            color: #000000;
+            border: 1px solid #007bff;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            background-color: #0056b3;
+            color: #ffffff;
+            transform: translateY(2px);
+            transition: 0.5s ease-in-out;
+        }
+
+        .btn-secondary {
+            background-color: #ffffff;
+            color: #000000;
+            border: 1px solid #dc3545;
+            border-radius: 8px;
+            padding: 12px 30px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            transform: translateY(-2px);
+            transition: all 0.5s ease-in-out;
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                max-width: 98vw;
+                padding: 20px 5px 20px 5px;
+            }
+        }
+
+        @media (max-width: 991px) {
+            .main-container {
+                padding: 20px 2px 20px 2px;
+            }
+
+            .top-right-btn {
+                top: 15px;
+                right: 15px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .row.g-4>[class^="col-"] {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    {% include 'sidebar.html' %}
+    <div class="main-container">
+        <!-- Top right View Users button -->
+        <button class="btn btn-outline-primary top-right-btn" onclick="location.href='/users'">View Users</button>
+
+        <!-- Flash Messages Display -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        {% set alert_class = 'alert-success' if category == 'success' else 'alert-danger' %}
+        <div class="alert {{ alert_class }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% set is_edit_mode = user is defined and user %}
+        <div class="form-header">
+            <!-- Logo added here -->
+            <img src="{{ url_for('static', filename='images/Synobizlogo.png') }}" alt="Logo" class="title-logo"
+                onclick="location.href='/tickets/dashboard'" style="cursor: pointer;">
+            <h2 class="form-title">{% if is_edit_mode %}Edit User{% else %}User Master{% endif %}</h2>
+        </div>
+
+        <form action="{{ url_for('users.update_user', user_id=user.id) if user else url_for('users.submit_user') }}"
+            method="POST">
+
+            <div class="row g-4">
+
+
+                <div class="row g-4">
+                    <!-- First column -->
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">User Type</label>
+                            <select class="form-select" name="user_type" required>
+                                {% set user_type = user.user_type if is_edit_mode else '' %}
+                                <option value="">Select</option>
+                                <option value="Admin" {{ 'selected' if user_type=='Admin' }}>Admin</option>
+                                <option value="Consultant" {{ 'selected' if user_type=='Consultant' }}>Consultant
+                                </option>
+                                <option value="Customer" {{ 'selected' if user_type=='Customer' }}>Customer</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">User Name</label>
+                            <input type="text" class="form-control" name="user_name" required
+                                value="{{ user.user_name if is_edit_mode else '' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" name="password" required
+                                value="{{ user.password if is_edit_mode else '' }}"
+                                placeholder="{% if is_edit_mode %}Leave blank to keep current password{% endif %}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Consultant Type</label>
+                            <select class="form-select" name="consultant_type">
+                                {% set consultant_type = user.consultant_type if is_edit_mode else '' %}
+                                <option value="">Select</option>
+                                <option value="Technical" {{ 'selected' if consultant_type=='Technical' }}>Technical
+                                </option>
+                                <option value="HR" {{ 'selected' if consultant_type=='HR' }}>HR</option>
+                                <option value="Consultant" {{ 'selected' if consultant_type=='Consultant' }}>Consultant
+                                </option>
+                                <option value="Sales" {{ 'selected' if consultant_type=='Sales' }}>Sales</option>
+                                <option value="Operation" {{ 'selected' if consultant_type=='External' }}>External
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Reporting Manager</label>
+                            <select class="form-select" name="reporting_manager">
+                                <option value="">Select Reporting Manager</option>
+                                {% for manager in managers %}
+                                <option value="{{ manager.id }}" {{ 'selected' if is_edit_mode and
+                                    user.reporting_manager==manager.id }}>
+                                    {{ manager.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Alternate Mobile Number</label>
+                            <input pattern="[0-9]{10}" class="form-control" inputmode="numeric" name="alternate_mobile"
+                                value="{{ user.alternate_mobile if is_edit_mode else '' }}">
+                        </div>
+                    </div>
+                    <!-- Second column -->
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Worksnap Credentials</label>
+                            <input type="text" class="form-control" name="worksnap_credentials"
+                                value="{{ user.worksnap_credentials if is_edit_mode else '' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status">
+                                {% set status = user.status if is_edit_mode else 'Active' %}
+                                <option value="Active" {{ 'selected' if status=='Active' }}>Active</option>
+                                <option value="Inactive" {{ 'selected' if status=='Inactive' }}>Inactive</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" name="name" required
+                                value="{{ user.name if is_edit_mode else '' }}" placeholder="Enter full name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mobile</label>
+                            <input type="text" class="form-control" name="mobile" required pattern="[0-9]{10}"
+                                value="{{ user.mobile if is_edit_mode else '' }}" inputmode="numeric"
+                                placeholder="Enter 10-digit mobile number">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Office Email ID</label>
+                            <input type="email" class="form-control" name="office_email"
+                                value="{{ user.office_email if is_edit_mode else '' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Timesheet Notification</label><br>
+                            {% set timesheet_notification = user.timesheet_notification if is_edit_mode else '' %}
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="timesheet_notification" id="ts_yes"
+                                    value="Yes" {{ 'checked' if timesheet_notification=='Yes' }}>
+                                <label for="ts_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="timesheet_notification" id="ts_no"
+                                    value="No" {{ 'checked' if timesheet_notification=='No' }}>
+                                <label for="ts_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Third column -->
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Joining Date</label>
+                            <input type="date" class="form-control" name="joining_date"
+                                value="{{ user.joining_date.strftime('%Y-%m-%d') if is_edit_mode and user.joining_date else '' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Position</label>
+                            <select class="form-select" name="position">
+                                {% set position = user.position if is_edit_mode else '' %}
+                                <option value="">Select</option>
+                                <option value="Manager" {{ 'selected' if position=='Manager' }}>Manager</option>
+                                <option value="Senior" {{ 'selected' if position=='Senior' }}>Senior</option>
+                                <option value="Junior" {{ 'selected' if position=='Junior' }}>Junior</option>
+                                <option value="Intern" {{ 'selected' if position=='Intern' }}>Intern</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Date of Birth</label>
+                            <input type="date" class="form-control" name="date_of_birth"
+                                value="{{ user.date_of_birth.strftime('%Y-%m-%d') if is_edit_mode and user.date_of_birth else '' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Anniversary Date</label>
+                            <input type="date" class="form-control" name="anniversary_date"
+                                value="{{ user.anniversary_date.strftime('%Y-%m-%d') if is_edit_mode and user.anniversary_date else '' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">SAP Server Credentials</label>
+                            <input type="text" class="form-control" name="sap_server_credentials"
+                                value="{{ user.sap_server_credentials if is_edit_mode else '' }}"
+                                placeholder="Username, Password">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Allow Backdated Timesheet Entry</label><br>
+                            {% set allow_backdated = user.allow_backdated_timesheet if is_edit_mode else '' %}
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="allow_backdated_timesheet"
+                                    id="bd_yes" value="Yes" {{ 'checked' if allow_backdated=='Yes' }}>
+                                <label for="bd_yes">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="allow_backdated_timesheet" id="bd_no"
+                                    value="No" {{ 'checked' if allow_backdated=='No' }}>
+                                <label for="bd_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-submit px-5">{% if is_edit_mode %}Update User{% else %}Submit{%
+                        endif %}</button>
+                    {% if is_edit_mode %}
+                    <a href="{{ url_for('users.view_users') }}" class="btn btn-secondary px-5 ms-2">Cancel</a>
+                    {% else %}
+                    <button type="reset" class="btn btn-secondary px-5 ms-2">Reset</button>
+                    {% endif %}
+                </div>
+        </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

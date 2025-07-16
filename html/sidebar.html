@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sidebar 3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+
+
+    button {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    :is(.sidebar, .burger, .logo) {
+      position: fixed;
+    }
+
+    .sidebar {
+      z-index: 1;
+      top: 0px;
+      left: 0;
+      width: 90px;
+      height: 100%;
+      background-image: linear-gradient(50deg, #0753a0bb, #17212df3);
+      transition: 0.4s;
+      box-shadow: #1e3660 3px 2px 10px;
+    }
+
+    @media (width < 500px) {
+      .sidebar {
+        translate: -100% 0;
+      }
+
+      body.open .sidebar {
+        translate: 0 0;
+      }
+    }
+
+    .sidebar-header {
+      display: grid;
+      place-items: center;
+      height: 72px;
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .logo {
+      z-index: 2;
+      top: 25px;
+      left: 52px;
+      width: 38px;
+      scale: 1.8;
+      transition: 0.4s;
+    }
+
+    .logo:hover {
+      cursor: pointer;
+      transform: scale(1.1);
+    }
+
+    @media (width <=500px) {
+      body.open>.logo {
+        translate: 28px;
+      }
+    }
+
+    @media (width >=500px) {
+      .logo {
+        left: 15px;
+        width: 42px;
+      }
+    }
+
+    .burger {
+      z-index: 2;
+      top: 0;
+      left: 0;
+      display: grid;
+      place-items: center;
+      width: 72px;
+      height: 72px;
+      background: url(./assets/icon-burger.svg) no-repeat center;
+    }
+
+    body.open .burger {
+      background: url(./assets/icon-close.svg) no-repeat center;
+    }
+
+    @media (width >=500px) {
+      .burger {
+        display: none;
+      }
+    }
+
+    .sidebar>nav {
+      display: grid;
+    }
+
+    .sidebar>nav:not(:last-child) {
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #1e3660;
+      margin-bottom: 1rem;
+    }
+
+    .sidebar>nav>button {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 60px;
+      padding: 0;
+    }
+
+    @media (width >=500px) {
+      .sidebar>nav>button:hover>span {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+
+    .sidebar>nav>button>img {
+      width: 24px;
+      height: 24px;
+      scale: 1.2;
+    }
+
+    .sidebar>nav>button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      scale: 1.2;
+    }
+
+    .sidebar>nav>button>span {
+      position: absolute;
+      top: 50%;
+      left: 120%;
+      translate: 0 -50%;
+      padding: 10px;
+      border-radius: 4px;
+      color: #f9f9f9;
+      background: rgba(0, 0, 0, 0.7);
+      opacity: 0;
+      visibility: hidden;
+      font-family: "Poppins";
+      font-size: 12px;
+      font-weight: 200;
+      letter-spacing: 2px;
+      line-height: 1;
+    }
+  </style>
+</head>
+
+<body>
+  
+  <button class="burger" onclick="toggleSidebar()"></button>
+  <img class="logo" onclick="location.href='/tickets/dashboard'"
+    src="{{ url_for('static', filename='images/Synobizlogo.png') }}" />
+  <aside class="sidebar">
+    <header class="sidebar-header"></header>
+    <nav>
+      <button type="button" onclick="location.href='/tickets/dashboard'">
+        <img src="{{ url_for('static', filename='images/home.png') }}" />
+        <span>Dashboard</span>
+      </button>
+      <button type="button" onclick="location.href='/attendance'">
+        <img src="{{ url_for('static', filename='images/attendance.png') }}" />
+        <span>Attendance</span>
+      </button>
+    </nav>
+    <nav>
+      <button type="button" onclick="location.href='/users/'">
+        <img src="{{ url_for('static', filename='images/accounts.png') }}" />
+        <span>User Data</span>
+      </button>
+      <button type="button"  onclick="location.href='/'">
+        <img src="{{ url_for('static', filename='images/plus.png') }}" />
+        <span>New User</span>
+      </button>
+      <button type="button" onclick="location.href='/tickets/new_task'">
+        <img src="{{ url_for('static', filename='images/new_task.png') }}" />
+        <span>New Task</span>
+      </button>
+
+      <button type="button" onclick="location.href='/holidays/list'">
+        <img src="{{ url_for('static', filename='images/holiday.png') }}" />
+        <span>Holiday List</span>
+      </button>
+    </nav>
+    <nav>
+      <button type="button" onclick="location.href='/leaves/list'">
+        <img src="{{ url_for('static', filename='images/leave_request.png') }}" />
+        <span>Leave Request</span>
+      </button>
+      <button type="button" onclick="location.href='/tickets/assign_tickets'">
+        <img src="{{ url_for('static', filename='images/assign.png') }}" />
+        <span>Assign Task</span>
+      </button>
+      <button type="button" onclick="location.href='{{ url_for('change_password') }}'">
+        <img src="{{ url_for('static', filename='images/password.png') }}" />
+        <span>Change Password</span>
+      </button>
+      <button type="button" onclick="location.href='{{ url_for('logout') }}'">
+        <img src="{{ url_for('static', filename='images/logout.png') }}" />
+        <span>Logout</span>
+      </button>
+    </nav>
+  </aside>
+  <script type="text/javascript">
+    const toggleSidebar = () => document.body.classList.toggle("open");
+  </script>
+</body>
+
+</html>
